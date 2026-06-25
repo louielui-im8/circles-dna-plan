@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>CircleDNA Resource Plan</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e8eaf0; font-size: 13px; padding: 20px; }
+
+  .header { text-align: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #2a2d3a; }
+  .header h1 { font-size: 20px; font-weight: 700; color: #fff; letter-spacing: -0.3px; }
+  .header .sub { font-size: 12px; color: #666; margin-top: 4px; }
+  .badge { display: inline-block; background: #1e3a5f; color: #4a9eff; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-left: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 14px; }
+
+  .card { background: #161822; border: 1px solid #2a2d3a; border-radius: 10px; padding: 14px; }
+  .card.accent-red { border-color: #4a1a1a; background: #1a1212; }
+  .card.accent-green { border-color: #1a3a2a; background: #121a15; }
+  .card.accent-blue { border-color: #1a2a4a; background: #12151a; }
+  .card.accent-amber { border-color: #3a2a1a; background: #1a1612; }
+  .card.accent-purple { border-color: #2a1a4a; background: #141220; }
+
+  .card-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: #555; margin-bottom: 10px; }
+  .card-title.red { color: #e05555; }
+  .card-title.green { color: #4caf7d; }
+  .card-title.blue { color: #4a9eff; }
+  .card-title.amber { color: #e0a055; }
+  .card-title.purple { color: #a07aff; }
+
+  .stat-big { font-size: 26px; font-weight: 700; color: #fff; line-height: 1; }
+  .stat-label { font-size: 11px; color: #666; margin-top: 3px; }
+  .stat-sub { font-size: 11px; color: #888; margin-top: 5px; }
+
+  .rev-chart { display: flex; gap: 10px; align-items: flex-end; height: 90px; margin-top: 6px; }
+  .rev-col { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 4px; }
+  .rev-bar-wrap { flex: 1; display: flex; align-items: flex-end; width: 100%; }
+  .rev-bar { width: 100%; border-radius: 4px 4px 0 0; }
+  .rev-label { font-size: 10px; color: #666; }
+  .rev-val { font-size: 10px; font-weight: 600; color: #ccc; }
+
+  .roas-row { display: flex; gap: 8px; align-items: center; padding: 7px 0; border-bottom: 1px solid #1e2030; }
+  .roas-row:last-child { border-bottom: none; }
+  .roas-month { font-size: 11px; color: #777; width: 65px; }
+  .roas-bar-wrap { flex: 1; height: 6px; background: #2a2d3a; border-radius: 3px; }
+  .roas-bar-fill { height: 6px; border-radius: 3px; }
+  .roas-val { font-size: 12px; font-weight: 700; width: 40px; text-align: right; }
+  .roas-spend { font-size: 10px; color: #555; width: 80px; text-align: right; }
+
+  .team-section { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .team-col-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+  .role-pill { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; margin-bottom: 6px; }
+  .role-pill.active { background: #1a2a1a; border: 1px solid #2a4a2a; }
+  .role-pill.gone { background: #2a1a1a; border: 1px solid #4a2a2a; opacity: 0.5; }
+  .role-pill.partial { background: #2a2a1a; border: 1px solid #4a4a2a; }
+  .role-pill.hire { background: #0f1f0f; border: 2px dashed #4caf7d; }
+  .role-name { font-size: 11px; font-weight: 600; }
+  .role-scope { font-size: 10px; color: #666; margin-top: 1px; }
+  .role-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot-green { background: #4caf7d; }
+  .dot-red { background: #e05555; }
+  .dot-yellow { background: #e0d055; }
+  .dot-hire { background: transparent; border: 2px dashed #4caf7d; }
+
+  .market-row { display: grid; grid-template-columns: 28px 1fr 90px 70px 80px; gap: 6px; align-items: center; padding: 6px 0; border-bottom: 1px solid #1e2030; font-size: 11px; }
+  .market-row.header-row { color: #555; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; padding-bottom: 6px; }
+  .market-row:last-child { border-bottom: none; }
+  .cpp.good { color: #4caf7d; font-weight: 600; }
+  .cpp.mid { color: #e0d055; font-weight: 600; }
+  .cpp.bad { color: #e05555; font-weight: 600; }
+  .bar-wrap { height: 4px; background: #2a2d3a; border-radius: 2px; }
+  .bar-fill { height: 4px; border-radius: 2px; }
+
+  .gap-item { display: flex; gap: 10px; margin-bottom: 12px; align-items: flex-start; }
+  .gap-item:last-child { margin-bottom: 0; }
+  .gap-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .gap-title { font-size: 12px; font-weight: 600; margin-bottom: 3px; }
+  .gap-desc { font-size: 11px; color: #777; line-height: 1.4; }
+
+  .hire-box { background: #0f1f0f; border: 2px solid #4caf7d; border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+  .hire-box-title { font-size: 15px; font-weight: 700; color: #4caf7d; margin-bottom: 3px; }
+  .hire-box-sub { font-size: 11px; color: #555; margin-bottom: 10px; }
+  .ask-tag { display: inline-block; background: #1e3a2a; color: #4caf7d; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-right: 4px; margin-bottom: 4px; }
+  .hire-impact { background: #0a1a0a; border: 1px solid #1a3a1a; border-radius: 6px; padding: 8px 10px; margin-top: 10px; font-size: 11px; color: #777; line-height: 1.5; }
+
+  .gary-option { border: 1px solid #2a2a4a; border-radius: 8px; padding: 11px 12px; margin-bottom: 8px; }
+  .gary-option:last-child { margin-bottom: 0; }
+  .gary-option-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .gary-option-title { font-size: 12px; font-weight: 700; color: #c0a0ff; }
+  .gary-effort { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+  .effort-low { background: #1a3a2a; color: #4caf7d; }
+  .effort-mid { background: #3a2a1a; color: #e0a055; }
+  .gary-desc { font-size: 11px; color: #777; line-height: 1.4; }
+
+  .phase-item { display: flex; gap: 8px; margin-bottom: 8px; align-items: flex-start; }
+  .phase-num { width: 18px; height: 18px; border-radius: 50%; background: #1e3a5f; color: #4a9eff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .phase-text { font-size: 11px; color: #aaa; line-height: 1.4; }
+  .phase-text strong { color: #ccc; }
+
+  .note { font-size: 10px; color: #444; margin-top: 8px; font-style: italic; }
+  .predicted-tag { display: inline-block; background: #2a2a1a; color: #e0d055; font-size: 9px; font-weight: 600; padding: 1px 5px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .highlight-box { background: #1a1a12; border: 1px solid #3a3a1a; border-radius: 6px; padding: 10px 12px; margin-top: 10px; }
+  .hl-title { font-size: 10px; font-weight: 600; color: #e0d055; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+  .hl-text { font-size: 11px; color: #888; line-height: 1.5; }
+
+  .legend { display: flex; gap: 14px; margin-top: 10px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #555; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>CircleDNA — Performance Marketing Resource Plan <span class="badge">For Danny</span></h1>
+  <div class="sub">Prepared by Louie Lui, Head of Performance Marketing · Jun 2026 · All figures in HKD · Meta spend only</div>
+</div>
+
+<!-- Top KPIs -->
+<div class="grid-5">
+  <div class="card">
+    <div class="card-title">Avg Monthly Revenue</div>
+    <div class="stat-big" style="color:#4caf7d">HKD 3.2M</div>
+    <div class="stat-label">Apr + May avg</div>
+    <div class="stat-sub">USD ~410K/month</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Avg Monthly Spend</div>
+    <div class="stat-big">HKD 750K</div>
+    <div class="stat-label">Meta ads only</div>
+    <div class="stat-sub">~USD 96K/month</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Blended ROAS</div>
+    <div class="stat-big" style="color:#4caf7d">4.2x</div>
+    <div class="stat-label">Apr 4.2x · May 4.3x</div>
+    <div class="stat-sub" style="color:#e05555">Jun projected 3.2x ↓</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Monthly Purchases</div>
+    <div class="stat-big">~390</div>
+    <div class="stat-label">Meta-attributed</div>
+    <div class="stat-sub">AOV ~HKD 8,200</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Blended CPP</div>
+    <div class="stat-big" style="color:#e0d055">HKD 1,940</div>
+    <div class="stat-label">~USD 249</div>
+    <div class="stat-sub">Wide market variance</div>
+  </div>
+</div>
+
+<!-- Revenue + Markets -->
+<div class="grid-2">
+  <div class="card">
+    <div class="card-title blue">Monthly Revenue Trend</div>
+    <div class="rev-chart">
+      <div class="rev-col">
+        <div class="rev-val">3.15M</div>
+        <div class="rev-bar-wrap"><div class="rev-bar" style="height:82px;background:#4a9eff;"></div></div>
+        <div class="rev-label">Apr</div>
+      </div>
+      <div class="rev-col">
+        <div class="rev-val">3.27M</div>
+        <div class="rev-bar-wrap"><div class="rev-bar" style="height:85px;background:#4a9eff;"></div></div>
+        <div class="rev-label">May</div>
+      </div>
+      <div class="rev-col">
+        <div class="rev-val" style="color:#e0d055">2.32M <span class="predicted-tag">est</span></div>
+        <div class="rev-bar-wrap"><div class="rev-bar" style="height:60px;background:#2a2a12;border:1px dashed #e0d055;"></div></div>
+        <div class="rev-label" style="color:#e0d055">Jun (proj)</div>
+      </div>
+    </div>
+    <div class="note">Jun projected: HKD 1,778,646 actual (1–23 Jun) × 30/23 = HKD 2,320,495 <span class="predicted-tag">predicted</span></div>
+    <div class="highlight-box">
+      <div class="hl-title">⚠ June Revenue Declining</div>
+      <div class="hl-text">Projected -29% vs May. ROAS falling 4.3x → 3.2x. No CRM in place means no nurture for unconverted leads — every drop in paid performance hits the bottom line directly.</div>
+    </div>
+    <div style="margin-top:12px;">
+      <div class="card-title amber" style="margin-bottom:8px;">ROAS by Month</div>
+      <div class="roas-row"><div class="roas-month">April</div><div class="roas-bar-wrap"><div class="roas-bar-fill" style="width:78%;background:#4caf7d;"></div></div><div class="roas-val" style="color:#4caf7d">4.2x</div><div class="roas-spend">~750K spend</div></div>
+      <div class="roas-row"><div class="roas-month">May</div><div class="roas-bar-wrap"><div class="roas-bar-fill" style="width:80%;background:#4caf7d;"></div></div><div class="roas-val" style="color:#4caf7d">4.3x</div><div class="roas-spend">~760K spend</div></div>
+      <div class="roas-row"><div class="roas-month">Jun <span class="predicted-tag">pred</span></div><div class="roas-bar-wrap"><div class="roas-bar-fill" style="width:60%;background:#e05555;"></div></div><div class="roas-val" style="color:#e05555">3.2x</div><div class="roas-spend">~726K spend</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title blue">Market CPP — Jun 2026 (HKD)</div>
+    <div class="market-row header-row"><div></div><div>Market</div><div>CPP (HKD)</div><div>Sales</div><div>Efficiency</div></div>
+    <div class="market-row"><div style="font-size:14px">🇲🇾</div><div style="color:#ccc">Malaysia</div><div class="cpp good">~1,480</div><div style="color:#888;font-size:11px">57</div><div><div class="bar-wrap"><div class="bar-fill" style="width:95%;background:#4caf7d"></div></div></div></div>
+    <div class="market-row"><div style="font-size:14px">🇸🇬</div><div style="color:#ccc">Singapore</div><div class="cpp good">~1,957</div><div style="color:#888;font-size:11px">106</div><div><div class="bar-wrap"><div class="bar-fill" style="width:85%;background:#4caf7d"></div></div></div></div>
+    <div class="market-row"><div style="font-size:14px">🇭🇰</div><div style="color:#ccc">HK / Macau</div><div class="cpp mid">~2,400</div><div style="color:#888;font-size:11px">32</div><div><div class="bar-wrap"><div class="bar-fill" style="width:68%;background:#e0d055"></div></div></div></div>
+    <div class="market-row"><div style="font-size:14px">🇦🇺</div><div style="color:#ccc">Australia</div><div class="cpp mid">~2,875</div><div style="color:#888;font-size:11px">5</div><div><div class="bar-wrap"><div class="bar-fill" style="width:55%;background:#e0d055"></div></div></div></div>
+    <div class="market-row"><div style="font-size:14px">🇦🇪</div><div style="color:#ccc">UAE</div><div class="cpp bad">~3,780</div><div style="color:#888;font-size:11px">10</div><div><div class="bar-wrap"><div class="bar-fill" style="width:38%;background:#e05555"></div></div></div></div>
+    <div class="market-row"><div style="font-size:14px">🇺🇸</div><div style="color:#ccc">USA</div><div class="cpp bad">~7,827</div><div style="color:#888;font-size:11px">6</div><div><div class="bar-wrap"><div class="bar-fill" style="width:18%;background:#e05555"></div></div></div></div>
+    <div class="market-row"><div style="font-size:14px">🇸🇦</div><div style="color:#ccc">Saudi Arabia</div><div class="cpp bad">~12,769</div><div style="color:#888;font-size:11px">2</div><div><div class="bar-wrap"><div class="bar-fill" style="width:6%;background:#e05555"></div></div></div></div>
+    <div class="note" style="margin-top:10px;">Revenue data is total Shopify revenue vs Meta spend only — ROAS is a blended proxy, not pure attribution.</div>
+  </div>
+</div>
+
+<!-- Team then vs ideal -->
+<div class="grid-2">
+  <div class="card accent-red">
+    <div class="card-title red">Team: Then (2025) vs Now — Ideal State</div>
+    <div class="team-section">
+      <div>
+        <div class="team-col-label" style="color:#888">8 Headcount</div>
+        <div class="role-pill active"><div class="role-dot dot-green"></div><div><div class="role-name" style="color:#4caf7d">Jenny</div><div class="role-scope">AM / Director</div></div></div>
+        <div class="role-pill active"><div class="role-dot dot-green"></div><div><div class="role-name" style="color:#4caf7d">Shao Wei</div><div class="role-scope">Campaign + Influencer</div></div></div>
+        <div class="role-pill active"><div class="role-dot dot-green"></div><div><div class="role-name" style="color:#4caf7d">Daniel</div><div class="role-scope">Media Buyer</div></div></div>
+        <div class="role-pill active"><div class="role-dot dot-green"></div><div><div class="role-name" style="color:#4caf7d">Amanda</div><div class="role-scope">Creative Strategist</div></div></div>
+        <div class="role-pill active"><div class="role-dot dot-green"></div><div><div class="role-name" style="color:#4caf7d">Brit</div><div class="role-scope">Email / CRM</div></div></div>
+        <div class="role-pill active"><div class="role-dot dot-green"></div><div><div class="role-name" style="color:#4caf7d">Tiffany</div><div class="role-scope">Sr. Designer</div></div></div>
+        <div class="role-pill active"><div class="role-dot dot-green"></div><div><div class="role-name" style="color:#4caf7d">Shin</div><div class="role-scope">Video Editor</div></div></div>
+        <div class="role-pill active"><div class="role-dot dot-green"></div><div><div class="role-name" style="color:#4caf7d">Diana</div><div class="role-scope">Influencer Manager</div></div></div>
+      </div>
+      <div>
+        <div class="team-col-label" style="color:#4caf7d">Ideal State</div>
+        <div class="role-pill active"><div class="role-dot dot-green"></div><div><div class="role-name" style="color:#4caf7d">Shao Wei</div><div class="role-scope">Campaign + Influencer Mgr</div></div></div>
+        <div class="role-pill active"><div class="role-dot dot-green"></div><div><div class="role-name" style="color:#4caf7d">Shin</div><div class="role-scope">Design + Video</div></div></div>
+        <div class="role-pill partial"><div class="role-dot dot-yellow"></div><div><div class="role-name" style="color:#e0d055">Junior Media Buyer</div><div class="role-scope">Execution · WJ + Hayley support</div></div></div>
+        <div class="role-pill hire"><div class="role-dot dot-hire"></div><div><div class="role-name" style="color:#4caf7d">CRM Manager ← hire</div><div class="role-scope">Lifecycle · Klaviyo · Nurture</div></div></div>
+        <div class="role-pill gone"><div class="role-dot dot-red"></div><div><div class="role-name">Creative Strategist</div><div class="role-scope">Shao + Shin covering</div></div></div>
+        <div class="role-pill gone"><div class="role-dot dot-red"></div><div><div class="role-name">Marketing AM</div><div class="role-scope">Louie overseeing</div></div></div>
+      </div>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#4caf7d"></div>Active</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#e0d055"></div>Partial</div>
+      <div class="legend-item"><div class="legend-dot" style="background:transparent;border:2px dashed #4caf7d;border-radius:50%"></div>Open hire</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#e05555"></div>Absorbed / vacant</div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:14px;">
+    <div class="card accent-amber">
+      <div class="card-title amber">The Gap</div>
+      <div class="gap-item">
+        <div class="gap-icon">📧</div>
+        <div>
+          <div class="gap-title" style="color:#e05555">Email / CRM — completely vacant</div>
+          <div class="gap-desc">Brit's role has been empty since she left. CircleDNA is a one-time purchase with a long consideration window — email is the most cost-efficient channel to nurture leads from awareness to conversion, keep the brand top of mind, and drive referrals post-purchase. Without it, every unconverted paid lead is simply lost.</div>
+        </div>
+      </div>
+      <div style="background:#1a0f0f;border:1px solid #5a2a2a;border-radius:6px;padding:10px 12px;margin:-2px 0 12px 0;">
+        <div style="font-size:10px;font-weight:700;color:#e05555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;">📉 What happened in June</div>
+        <div style="font-size:11px;color:#999;line-height:1.6;">The last email sent to CircleDNA's list was <strong style="color:#ccc">May 31st</strong>. June revenue dropped <strong style="color:#e05555">-29% vs May</strong>. We can't prove causation — but with no other channel actively nurturing leads through the consideration window, email going dark is the most likely contributing factor. This is the clearest real-world signal we have for the CRM hire.</div>
+      </div>
+      <div class="gap-item" style="margin-bottom:0">
+        <div class="gap-icon">⚠️</div>
+        <div>
+          <div class="gap-title" style="color:#e0a055">Key-person risk</div>
+          <div class="gap-desc">All institutional knowledge sits with Shao Wei. No documentation, no backup. CRM hire also distributes this risk.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card accent-purple">
+      <div class="card-title purple">Gary — Optional Upside (Stays on IM8)</div>
+      <div style="font-size:11px;color:#555;margin-bottom:10px;">Gary remains primarily on IM8. If bandwidth allows, 3 ways he can add value to CircleDNA:</div>
+      <div class="gary-option">
+        <div class="gary-option-header">
+          <div class="gary-option-title">① Klaviyo Automation Setup</div>
+          <div class="gary-effort effort-low">One-time</div>
+        </div>
+        <div class="gary-desc">Gary builds the CRM flow architecture on Klaviyo. CRM hire manages it ongoing. Accelerates time-to-live for the new hire.</div>
+      </div>
+      <div class="gary-option">
+        <div class="gary-option-header">
+          <div class="gary-option-title">② Google Ads</div>
+          <div class="gary-effort effort-mid">Ongoing</div>
+        </div>
+        <div class="gary-desc">CircleDNA has no Google presence. Gary already runs Google for IM8 — marginal effort to extend to CircleDNA. New revenue channel, zero cannibalisation of Meta.</div>
+      </div>
+      <div class="gary-option">
+        <div class="gary-option-header">
+          <div class="gary-option-title">③ AI Creative Pipeline</div>
+          <div class="gary-effort effort-low">Share system</div>
+        </div>
+        <div class="gary-desc">Gary shares the IM8 AI creative automation with CircleDNA. Shao Wei plugs in. More creative volume at no extra headcount cost.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Ask + Next Steps -->
+<div class="grid-2">
+  <div class="card accent-green">
+    <div class="card-title green">The Ask — 1 Headcount Hire</div>
+    <div class="hire-box">
+      <div class="hire-box-title">① Email / CRM Manager</div>
+      <div class="hire-box-sub">Replaces Brit's role — highest impact gap, completely vacant</div>
+      <span class="ask-tag">Lead nurture sequences</span>
+      <span class="ask-tag">Consideration window flows</span>
+      <span class="ask-tag">Post-purchase journeys</span>
+      <span class="ask-tag">Referral programmes</span>
+      <span class="ask-tag">Win-back campaigns</span>
+      <span class="ask-tag">Segmentation</span>
+      <span class="ask-tag">Klaviyo ownership</span>
+      <div class="hire-impact">
+        <strong style="color:#4caf7d">Why now:</strong> CircleDNA is a one-time, high-consideration purchase at AOV ~HKD 8,200. Paid ads bring people to the door — email keeps them engaged through the consideration window until they convert. Without CRM, we are paying ~HKD 1,940 to acquire each customer through paid ads and losing unconverted leads permanently. Email is the cheapest way to lower effective CAC.
+      </div>
+    </div>
+  </div>
+
+  <div class="card accent-blue">
+    <div class="card-title blue">Next Steps</div>
+    <div class="phase-item"><div class="phase-num">1</div><div class="phase-text"><strong>Approve CRM Manager hire</strong> — nurtures paid traffic already being generated, reduces effective CAC.</div></div>
+    <div class="phase-item"><div class="phase-num">2</div><div class="phase-text"><strong>Confirm Gary's optional scope</strong> — Klaviyo setup and/or Google Ads if IM8 bandwidth allows.</div></div>
+    <div class="phase-item"><div class="phase-num">3</div><div class="phase-text"><strong>Market rationalisation</strong> — review SA (CPP ~12,769) and US (CPP ~7,827). At HKD 8,200 AOV these are likely loss-making without confirmed LTV data.</div></div>
+    <div class="phase-item"><div class="phase-num">4</div><div class="phase-text"><strong>Double down SG + MY</strong> — best CPP, highest volume. Reallocate budget from underperforming markets.</div></div>
+    <div class="phase-item"><div class="phase-num">5</div><div class="phase-text"><strong>Arrest June ROAS decline</strong> — 4.3x → 3.2x projected. Junior buyer + Louie oversight to diagnose and reallocate immediately.</div></div>
+    <div style="background:#1a1a2a;border:1px solid #2a2a4a;border-radius:6px;padding:10px;margin-top:10px;">
+      <div style="font-size:10px;font-weight:600;color:#4a9eff;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Pending Discussion</div>
+      <div style="font-size:11px;color:#666;">Brand vs performance budget split. Northbeam recommended over Podscribe for podcast attribution.</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
